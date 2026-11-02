@@ -1,0 +1,33 @@
+From 4ab13f3ce44fc6ef65d116cc1427d849f54b3010 Mon Sep 17 00:00:00 2001
+From: Lucas <268448976+aslucas-dev@users.noreply.github.com>
+Date: Sat, 31 Oct 2026 16:45:20 -0300
+Subject: [PATCH] fix(sd): do not mount again at boot if the card is already
+ mounted
+
+With POWER_LOSS_RECOVERY, setup() already mounts the card and manage_media()
+repeated the mount. On the Robin Nano V1.2 this hung right after
+"Media present: -1 -> 1", with a Watchdog Reset every 10 s, with any card.
+Not yet tested on the printer.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Marlin/src/sd/cardreader.cpp | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
+
+diff --git a/Marlin/src/sd/cardreader.cpp b/Marlin/src/sd/cardreader.cpp
+index 0bfa111..8c10778 100644
+--- a/Marlin/src/sd/cardreader.cpp
++++ b/Marlin/src/sd/cardreader.cpp
+@@ -721,8 +721,10 @@ void CardReader::manage_media() {
+         #endif
+       #endif
+       if (old_stat <= MEDIA_BOOT) {     // Mount at boot before anything else runs
+-        safe_delay(500);                // Time for inserted media to settle
+-        mount(!retries_left);           // Alert only on the last try
++        if (!isMounted()) {             // Already mounted by setup() for Power-Loss Recovery?
++          safe_delay(500);              // Time for inserted media to settle
++          mount(!retries_left);         // Alert only on the last try
++        }
+       }
+       else if (!mount_async(!retries_left)) {
+         prev_stat = old_stat;           // Still mounting. Continue on the next call.

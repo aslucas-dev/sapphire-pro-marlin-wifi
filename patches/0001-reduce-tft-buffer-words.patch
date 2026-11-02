@@ -1,0 +1,27 @@
+From e710f685a53174a5dcdab15d195e83439b6a3b4e Mon Sep 17 00:00:00 2001
+From: Lucas <268448976+aslucas-dev@users.noreply.github.com>
+Date: Sat, 31 Oct 2026 16:33:17 -0300
+Subject: [PATCH] fix(pins): reduce TFT_BUFFER_WORDS to fit Nano V1.2 RAM
+
+With WiFi and Color UI, linking failed by 6424 bytes of RAM on the F103VE.
+Halving the buffer frees 14400 bytes and only shrinks the drawing blocks.
+Result: RAM 85.4% and flash 56.4%.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Marlin/src/pins/stm32f1/pins_MKS_ROBIN_NANO_common.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Marlin/src/pins/stm32f1/pins_MKS_ROBIN_NANO_common.h b/Marlin/src/pins/stm32f1/pins_MKS_ROBIN_NANO_common.h
+index e1f5fee..ca2bf57 100644
+--- a/Marlin/src/pins/stm32f1/pins_MKS_ROBIN_NANO_common.h
++++ b/Marlin/src/pins/stm32f1/pins_MKS_ROBIN_NANO_common.h
+@@ -211,7 +211,7 @@
+   #define TOUCH_BUTTONS_HW_SPI
+   #define TOUCH_BUTTONS_HW_SPI_DEVICE          2
+ 
+-  #define TFT_BUFFER_WORDS                 14400
++  #define TFT_BUFFER_WORDS                 7200
+ #endif
+ 
+ #define SPI_FLASH

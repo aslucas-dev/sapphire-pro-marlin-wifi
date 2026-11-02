@@ -1,0 +1,29 @@
+From 9f17961e015e6941e5ee3cc22cd2772e51a10b74 Mon Sep 17 00:00:00 2001
+From: Lucas <268448976+aslucas-dev@users.noreply.github.com>
+Date: Sat, 31 Oct 2026 16:33:17 -0300
+Subject: [PATCH] fix(sd): clear F1 SDIO registers before init
+
+Unlike the F4, the F1 has no SDIO reset bit, so a second mount inherited
+the previous state. Not yet tested on the printer.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Marlin/src/HAL/STM32/sdio.cpp | 5 +++++
+ 1 file changed, 5 insertions(+)
+
+diff --git a/Marlin/src/HAL/STM32/sdio.cpp b/Marlin/src/HAL/STM32/sdio.cpp
+index a4701a6..2463838 100644
+--- a/Marlin/src/HAL/STM32/sdio.cpp
++++ b/Marlin/src/HAL/STM32/sdio.cpp
+@@ -248,6 +248,11 @@ void HAL_SD_MspInit(SD_HandleTypeDef *hsd) {
+     #ifdef STM32F1xx
+       __HAL_RCC_SDIO_CLK_ENABLE();
+       __HAL_RCC_DMA2_CLK_ENABLE();
++      // F1 has no SDIO reset bit. Return the registers to their reset values so a re-mount starts clean.
++      SDIO->POWER = 0; SDIO->CLKCR = 0; SDIO->ARG = 0; SDIO->CMD = 0;
++      SDIO->DTIMER = 0; SDIO->DLEN = 0; SDIO->DCTRL = 0;
++      SDIO->ICR = 0x00C007FFU; SDIO->MASK = 0;
++      delay(2);
+     #else
+       __HAL_RCC_SDIO_FORCE_RESET();   delay(2);
+       __HAL_RCC_SDIO_RELEASE_RESET(); delay(2);

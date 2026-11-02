@@ -17,7 +17,7 @@ exposed several separate failures on this board:
 |---|---|---|
 | Build failed: RAM overflow of 6424 bytes on the F103VE | The Color UI drawing buffer plus the WiFi buffers did not fit in 64 KB | [Reduce `TFT_BUFFER_WORDS`](patches/0001-reduce-tft-buffer-words.patch) |
 | `Link: not configured`; the board never heard the module | `WifiSerial::init` left `pin_rts` and `pin_cts` at `PA_0`, so `uart_init()` gave up silently | [Set both pins to `NC`](patches/0002-wifiserial-rts-cts-nc.patch) |
-| Watchdog reset every 10 s with any card inserted | `manage_media()` mounted a card that `setup()` had already mounted, and the hang followed that second mount | [Clear SDIO registers on F1](patches/0003-clear-f1-sdio-registers.patch) and [skip the second mount](patches/0004-skip-second-mount.patch) |
+| Watchdog reset every 10 s with any card inserted | The STM32F1 HAL has no SDIO reset, so mounting the card a second time (at boot, or with `M21`) hung | [Clear SDIO registers on F1](patches/0003-clear-f1-sdio-registers.patch); `v1.0.0` also [skips the second mount at boot](patches/0004-skip-second-mount.patch), which later tests showed is not needed |
 | Example configuration rejected with BLTouch | `Z_MIN_ENDSTOP_HIT_STATE` stayed `LOW` | Configuration change |
 | Z axis and extruder ran backwards | The example's TMC2209 settings did not match this machine | Configuration change |
 
@@ -28,7 +28,9 @@ exposed several separate failures on this board:
   the UART had never started, which pointed to initialization rather than wiring.
 - **SD card:** a boot trace stopped inside `manage_media()` right after
   `Media present: -1 -> 1`. An empty card failed the same way, which ruled out the
-  card contents.
+  card contents. Flashing each half of the fix on its own later showed the cause:
+  skipping the second mount let the board boot, but the next `M21` still reset it;
+  clearing the SDIO registers alone fixed both.
 - **Motion and sensors:** each axis and the extruder were checked against commanded
   moves on the machine, one at a time.
 
@@ -88,23 +90,51 @@ The [`config/`](config) files are the ones used at `v1.0.0`. The probe offset in
 use on my machine is `M851 Z-1.77`, saved in its settings; the default in those
 files is still `-0.6`.
 
+## Changing networks
+
+Only one network is stored. When it is unavailable, the module opens its own
+access point **with no password**. Tested alternatives:
+
+- `M587 A0 S"Network" P"password"` and `M500` join another network. Names with
+  spaces work.
+- `M587 A1 S"Name" P"password"` and `M500` make the printer host its own network
+  **with** a password (WPA2), reachable at 192.168.4.1.
+- The module's web page can change the network too, but Marlin restores its own
+  saved network at the next power-on. The page also shows the password in plain
+  text and sends it in the URL.
+
 ## Known limitations
 
-- Only one network is stored. When it is unavailable, the module opens its own
-  access point **with no password**.
 - Commands sent to port 8080 during an upload are written into the file.
 - Files of 58 and 200 bytes returned HTTP 200 but were not saved; 1100 bytes and
   larger worked.
-- `M23` with a long file name over the network fails with `file.open failed`.
+- In `v1.0.0`, `M20 <path>` and `M23` sent over the network fail, and a USB host
+  gets an unsolicited `ok T:` line every 5 seconds. Both are fixed in the pull
+  requests below.
+- After `M24` sent over the network, the WiFi side kept reporting `PRINTING` while
+  Marlin was idle, which blocks file commands over WiFi until a restart. Not yet
+  understood.
 - A real filament runout during a print has not been tested.
 - Nothing here has been tested on any other machine.
 
 ## Status upstream
 
-The patches are based on Marlin
+The patches here are based on Marlin
 [`22abaad`](https://github.com/MarlinFirmware/Marlin/commit/22abaad533b0230397f3ef1bbb4798e3e02c1da0).
-They have not been submitted yet. Marlin's WiFi module support itself comes from
-the Marlin project; this work fixes what kept it from running on this setup.
+Fixes submitted to Marlin, each tested on this printer against the current
+`bugfix-2.1.x`:
+
+| Pull request | Fix |
+|---|---|
+| [#28784](https://github.com/MarlinFirmware/Marlin/pull/28784) | MKS WiFi serial init leaving RTS/CTS on `PA_0` |
+| [#28785](https://github.com/MarlinFirmware/Marlin/pull/28785) | STM32F1 SDIO hang when the card is mounted again |
+| [#28786](https://github.com/MarlinFirmware/Marlin/pull/28786) | MKS WiFi `M20`, `M23` and `M28` reading their arguments from the wrong place |
+| [#28787](https://github.com/MarlinFirmware/Marlin/pull/28787) | Unsolicited `ok T:` on the USB port from the module's temperature polls |
+
+A follow-up for `M23` with the long name of an uploaded file depends on #28786.
+
+Marlin's WiFi module support itself comes from the Marlin project; this work fixes
+what kept it from running on this setup.
 
 ## Credits and license
 

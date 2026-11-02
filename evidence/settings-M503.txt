@@ -1,0 +1,42 @@
+    echo:; Linear Units:
+    echo:  G21 ; (mm)
+    echo:; Auto Temp Control:
+    echo:  M104 S0 B250 F0.00
+    echo:; Temperature Units:
+    echo:  M149 C ; Units in Celsius
+    echo:; Filament settings (Disabled):
+    echo:  M200 S0 D1.75
+    echo:; Steps per unit:
+    echo:  M92 X80.00 Y80.00 Z1600.00 E415.00
+    echo:; Max feedrates (units/s):
+    echo:  M203 X300.00 Y300.00 Z10.00 E50.00
+    echo:; Max Acceleration (units/s2):
+    echo:  M201 X3000.00 Y3000.00 Z100.00 E10000.00
+    echo:; Acceleration (units/s2) (P<print-accel> R<retract-accel> T<travel-accel>):
+    echo:  M204 P2000.00 R1000.00 T2500.00
+    echo:; Advanced (B<min_segment_time_us> S<min_feedrate> T<min_travel_feedrate> J<junc_dev>):
+    echo:  M205 B20000.00 S0.00 T0.00 J0.04
+    echo:; Home offset:
+    echo:  M206 X0.00 Y0.00 Z0.00
+    echo:; Auto Bed Leveling:
+    echo:  M420 S0 Z10.00 ; Leveling OFF
+    echo:; Material heatup parameters:
+    echo:  M145 S0 H195.00 B60.00 F0
+    echo:  M145 S1 H240.00 B100.00 F0
+    echo:; Hotend PID:
+    echo:  M301 P8.16 I0.37 D44.46
+    echo:; Bed PID:
+    echo:  M304 P83.36 I16.25 D285.12
+    echo:; Power-loss recovery:
+    echo:  M413 S0 ; OFF
+    echo:; Z-Probe Offset:
+    echo:  M851 X0.00 Y-42.00 Z-1.77 ; (mm)
+    echo:; Hotend Idle Timeout:
+    echo:  M86 B0 E0 S900 T180
+    echo:; Filament load/unload:
+    echo:  M603 L0.00 U100.00 ; (mm)
+    echo:; Filament runout sensor:
+    echo:  M412 S1 ; Sensor ON
+    echo:; MKS WiFi module:
+    echo:  M587 S"<network>" A0  ; Join network, password not shown
+    echo:  Link: connected  IP: <ip>

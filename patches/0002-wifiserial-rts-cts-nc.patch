@@ -1,0 +1,31 @@
+From 4fa06ace47527a0e8f90668faaa165da987df59c Mon Sep 17 00:00:00 2001
+From: Lucas <268448976+aslucas-dev@users.noreply.github.com>
+Date: Sat, 31 Oct 2026 16:33:17 -0300
+Subject: [PATCH] fix(wifi): set pin_rts and pin_cts to NC in WifiSerial
+
+WifiSerial::init did not set these fields. Left at zero they mean PA_0,
+which is not an RTS pin on the F103, and uart_init() gives up silently.
+
+Measured on a Robin Nano V1.2 with M587: USART1 had no clock and zeroed
+registers, with 1228 edges on PA10. The module was transmitting and the
+board was not listening. With the fix: link connected, IP on the network,
+ping, HTTP and TCP 8080 all work.
+
+Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>
+---
+ Marlin/src/feature/mks_wifi/wifiSerial_STM32.cpp | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Marlin/src/feature/mks_wifi/wifiSerial_STM32.cpp b/Marlin/src/feature/mks_wifi/wifiSerial_STM32.cpp
+index e923912..9bf5717 100644
+--- a/Marlin/src/feature/mks_wifi/wifiSerial_STM32.cpp
++++ b/Marlin/src/feature/mks_wifi/wifiSerial_STM32.cpp
+@@ -41,6 +41,8 @@ void WifiSerial::setTx(PinName _tx)  { _serial.pin_tx = _tx; }
+ void WifiSerial::init(PinName _rx, PinName _tx) {
+   _serial.pin_rx  = (_rx == _tx) ? NC : _rx;
+   _serial.pin_tx  = _tx;
++  _serial.pin_rts = NC; // Without these uart_init() gives up: 0 is PA_0, which isn't an RTS pin
++  _serial.pin_cts = NC;
+   _serial.rx_buff = wifiRxBuf;
+   _serial.rx_head = 0;
+   _serial.rx_tail = 0;

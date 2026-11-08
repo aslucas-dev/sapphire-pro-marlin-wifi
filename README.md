@@ -109,8 +109,8 @@ access point **with no password**. Tested alternatives:
 - Files of 58 and 200 bytes returned HTTP 200 but were not saved; 1100 bytes and
   larger worked.
 - In `v1.0.0`, `M20 <path>` and `M23` sent over the network fail, and a USB host
-  gets an unsolicited `ok T:` line every 5 seconds. Both are fixed in the pull
-  requests below.
+  gets an unsolicited `ok T:` line every 5 seconds. Both are fixed in Marlin
+  `bugfix-2.1.x` (see below), but not yet in a release built here.
 - After `M24` sent over the network, the WiFi side kept reporting `PRINTING` while
   Marlin was idle, which blocks file commands over WiFi until a restart. Not yet
   understood.
@@ -121,17 +121,19 @@ access point **with no password**. Tested alternatives:
 
 The patches here are based on Marlin
 [`22abaad`](https://github.com/MarlinFirmware/Marlin/commit/22abaad533b0230397f3ef1bbb4798e3e02c1da0).
-Fixes submitted to Marlin, each tested on this printer against the current
+Fixes sent to Marlin, each tested on this printer against the current
 `bugfix-2.1.x`:
 
-| Pull request | Fix |
-|---|---|
-| [#28784](https://github.com/MarlinFirmware/Marlin/pull/28784) | MKS WiFi serial init leaving RTS/CTS on `PA_0` |
-| [#28785](https://github.com/MarlinFirmware/Marlin/pull/28785) | STM32F1 SDIO hang when the card is mounted again |
-| [#28786](https://github.com/MarlinFirmware/Marlin/pull/28786) | MKS WiFi `M20`, `M23` and `M28` reading their arguments from the wrong place |
-| [#28787](https://github.com/MarlinFirmware/Marlin/pull/28787) | Unsolicited `ok T:` on the USB port from the module's temperature polls |
+| Pull request | Fix | Status |
+|---|---|---|
+| [#28784](https://github.com/MarlinFirmware/Marlin/pull/28784) | MKS WiFi serial init leaving RTS/CTS on `PA_0` | Merged 2026-11-03 |
+| [#28785](https://github.com/MarlinFirmware/Marlin/pull/28785) | STM32F1 SDIO hang when the card is mounted again | Merged 2026-11-03 |
+| [#28786](https://github.com/MarlinFirmware/Marlin/pull/28786) | MKS WiFi `M20`, `M23` and `M28` reading their arguments from the wrong place | Merged 2026-11-03 |
+| [#28787](https://github.com/MarlinFirmware/Marlin/pull/28787) | Unsolicited `ok T:` on the USB port from the module's temperature polls | Merged 2026-11-03 |
+| [#28811](https://github.com/MarlinFirmware/Marlin/pull/28811) | MKS WiFi `M23` with the long name of an uploaded file | Open |
 
-A follow-up for `M23` with the long name of an uploaded file depends on #28786.
+After #28786, another contributor fixed the same argument bug in `M998`
+([#28789](https://github.com/MarlinFirmware/Marlin/pull/28789)).
 
 Marlin's WiFi module support itself comes from the Marlin project; this work fixes
 what kept it from running on this setup.

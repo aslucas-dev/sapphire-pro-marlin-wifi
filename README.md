@@ -130,7 +130,7 @@ Fixes sent to Marlin, each tested on this printer against the current
 | [#28785](https://github.com/MarlinFirmware/Marlin/pull/28785) | STM32F1 SDIO hang when the card is mounted again | Merged 2026-11-03 |
 | [#28786](https://github.com/MarlinFirmware/Marlin/pull/28786) | MKS WiFi `M20`, `M23` and `M28` reading their arguments from the wrong place | Merged 2026-11-03 |
 | [#28787](https://github.com/MarlinFirmware/Marlin/pull/28787) | Unsolicited `ok T:` on the USB port from the module's temperature polls | Merged 2026-11-03 |
-| [#28811](https://github.com/MarlinFirmware/Marlin/pull/28811) | MKS WiFi `M23` with the long name of an uploaded file | Open |
+| [#28811](https://github.com/MarlinFirmware/Marlin/pull/28811) | MKS WiFi `M23` with the long name of an uploaded file | Merged 2026-11-09 |
 
 After #28786, another contributor fixed the same argument bug in `M998`
 ([#28789](https://github.com/MarlinFirmware/Marlin/pull/28789)).
